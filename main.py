@@ -36,6 +36,13 @@ async def on_message(message):
 async def verify(origin_interaction: Interaction, known_user: Member, games: str):
     # await interaction.response.send_message(f"**{interaction.user}** - {known_user} \n" + games)
 
+    if origin_interaction.user == known_user:
+        await origin_interaction.response.send_message("❌You can't verify yourself")
+        return
+    elif not known_user.roles.__contains__(origin_interaction.guild.get_role(verifyID)):
+        await origin_interaction.response.send_message("❌Only verified users can verify others")
+        return
+
     await origin_interaction.response.send_message(f"{origin_interaction.user} - {known_user} \n{games} \nWaiting for confirmation...")
 
     button_yes = Button(label="Yes", style=ButtonStyle.success, emoji="👍")
@@ -45,13 +52,13 @@ async def verify(origin_interaction: Interaction, known_user: Member, games: str
     async def button_yes_callback(interaction: Interaction):
         await origin_interaction.user.add_roles(origin_interaction.guild.get_role(verifyID))
         await origin_interaction.edit_original_response(content=f"{origin_interaction.user} - {known_user} \n{games} \n✅Your request was accepted, you are now verified.")
-        await interaction.response.edit_message(content=f"✅Accepted User {origin_interaction.user}")
+        await interaction.response.edit_message(content=f"✅Accepted User {origin_interaction.user}", view=None)
 
         return
 
     async def button_no_callback(interaction: Interaction):
         await origin_interaction.edit_original_response(content="❌The user has declined your request")
-        await interaction.response.send_message(content="✅")
+        await interaction.response.send_message(content=f"❌Declined User {origin_interaction.user}", view=None)
         return
 
     button_yes.callback = button_yes_callback
